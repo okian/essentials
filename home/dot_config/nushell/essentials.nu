@@ -14,8 +14,8 @@ def "essentials update" [] {
   print "==> swiftly update"
   try { ^swiftly update --assume-yes }
 
-  print "==> uv self update + python"
-  try { ^uv self update; ^uv python upgrade }
+  print "==> uv: install latest python (uv itself is updated by brew above)"
+  try { ^uv python install }
 
   print "==> neovim plugin sync"
   try { ^nvim --headless "+Lazy! sync" +qa }
