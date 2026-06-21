@@ -65,6 +65,8 @@ packages:
     # containers
     - podman
     - podman-compose
+    # cloud
+    - awscli
     # misc utilities
     - jq
     - yq
