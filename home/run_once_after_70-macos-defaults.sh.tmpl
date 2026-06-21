@@ -4,6 +4,20 @@ set -euo pipefail
 {{ if .isMac -}}
 echo "==> Applying macOS defaults"
 
+# --- Appearance: always Dark, Orange accent + highlight, small sidebar icons.
+# Accent/Dark fully apply after the next login. ---
+defaults write NSGlobalDomain AppleInterfaceStyle -string "Dark"
+defaults delete NSGlobalDomain AppleInterfaceStyleSwitchesAutomatically 2>/dev/null || true
+# Accent color: -1 Graphite, 0 Red, 1 Orange, 2 Yellow, 3 Green, 4 Blue, 5 Purple, 6 Pink.
+defaults write NSGlobalDomain AppleAccentColor -int 1
+defaults write NSGlobalDomain AppleHighlightColor -string "1.000000 0.874510 0.701961 Orange"
+# Sidebar icon size: 1 Small, 2 Medium, 3 Large.
+defaults write NSGlobalDomain NSTableViewDefaultSizeMode -int 1
+# Allow window tinting from the wallpaper (closest reliable knob to the
+# Tahoe "Liquid Glass / Tinted" look; the exact icon-style key is not yet
+# stable — set "Tinted" in System Settings > Appearance if this isn't enough).
+defaults write NSGlobalDomain AppleReduceDesktopTinting -bool false
+
 # --- Keyboard: fast key repeat, no press-and-hold accent popup. ---
 defaults write NSGlobalDomain KeyRepeat -int 2
 defaults write NSGlobalDomain InitialKeyRepeat -int 15
