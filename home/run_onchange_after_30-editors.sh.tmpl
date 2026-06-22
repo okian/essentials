@@ -34,3 +34,11 @@ if command -v git-lfs >/dev/null 2>&1; then
   git lfs install --skip-repo >/dev/null 2>&1 || true
 fi
 echo "==> editors done"
+
+# --- change detection: re-run (hence `doom sync`) on any Doom config edit ----
+# Embeds a hash of each ~/.config/doom file, so enabling a module or adding a
+# package re-triggers this script and `doom sync` installs it — no manual sync,
+# no void-function from an unsynced package. Mirrors packages.yaml's wiring.
+{{ range (glob (joinPath .chezmoi.sourceDir "dot_config" "doom" "*")) -}}
+# {{ base . }} {{ include (printf "dot_config/doom/%s" (base .)) | sha256sum }}
+{{ end -}}

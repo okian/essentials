@@ -28,7 +28,9 @@ Filenames encode the target path and attributes; the rendered result is what lan
 - `run_once_*` — run a single time per machine (keyed by content hash); e.g. macOS defaults, shell change.
 - `run_onchange_*` — re-run whenever the rendered content changes. The package installers
   **embed `packages.yaml`** into their rendered output, so editing `packages.yaml` changes the
-  hash and auto-triggers re-install — this is the wiring; nothing else references it.
+  hash and auto-triggers re-install. The same trick wires `run_onchange_after_30-editors` to the
+  **Doom config** (it embeds `sha256` of `dot_config/doom/*`), so editing `init.el`/`packages.el`/
+  `config.el` auto-triggers `doom sync` — enabling a module always installs its package.
 - `before_` / `after_` — run before/after the main file-apply phase. Numeric prefixes
   (`00-`, `10-`, …) order them within a phase.
 
