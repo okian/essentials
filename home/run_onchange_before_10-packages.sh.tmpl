@@ -46,19 +46,31 @@ if command -v flatpak >/dev/null 2>&1; then
   flatpak install -y --noninteractive flathub {{ . }} || true
   {{ end -}}
 fi
+{{ end -}}
 
-# JetBrainsMono Nerd Font (mac gets it via cask; Linux has no brew cask).
-if ! fc-list 2>/dev/null | grep -qi "JetBrainsMono Nerd Font"; then
+# --- JetBrainsMono Nerd Font (both OSes; direct from nerd-fonts releases) ----
+# Patched Nerd Font (icons/glyphs) used by the WezTerm tab bar, starship, yazi.
+# Direct unzip rather than a brew cask: casks try to "adopt" pre-existing font
+# files and abort when checksums differ; `cp -f` just overwrites.
+{{ if .isMac -}}
+fontdir="$HOME/Library/Fonts"
+{{ else -}}
+fontdir="$HOME/.local/share/fonts"
+{{ end -}}
+if ! compgen -G "$fontdir/JetBrainsMono*NerdFont*" >/dev/null; then
   echo "==> Installing JetBrainsMono Nerd Font"
-  fontdir="$HOME/.local/share/fonts"
   tmpd="$(mktemp -d)"
   if curl -fsSL -o "$tmpd/JBM.zip" \
       https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip; then
-    mkdir -p "$fontdir/JetBrainsMonoNerd"
-    unzip -o "$tmpd/JBM.zip" -d "$fontdir/JetBrainsMonoNerd" >/dev/null
-    fc-cache -f "$fontdir" >/dev/null 2>&1 || true
+    mkdir -p "$fontdir" "$tmpd/JBM"
+    unzip -oq "$tmpd/JBM.zip" -d "$tmpd/JBM"
+    cp -f "$tmpd/JBM"/*.ttf "$fontdir"/ 2>/dev/null || true
+{{ if .isLinux -}}
+    if command -v fc-cache >/dev/null 2>&1; then
+      fc-cache -f "$fontdir" >/dev/null 2>&1 || true
+    fi
+{{ end -}}
   fi
   rm -rf "$tmpd"
 fi
-{{ end -}}
 echo "==> packages done"
