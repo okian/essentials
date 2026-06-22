@@ -49,19 +49,23 @@ with its own git name/email/signing key. Any repo cloned under
 
 | Command | What it does |
 |---------|--------------|
+| `essentials git-identity add <entity> <email> [name]` | create the identity, make `~/repos/<entity>/`, then **encrypt + commit + push** |
+| `essentials git-identity edit <entity>` | edit in `$EDITOR`; if changed, **re-encrypt + commit + push** |
 | `essentials git-identity list` | show each entity's resolved name/email + whether its dir exists |
-| `essentials git-identity add <entity> <email> [name]` | create the identity, make `~/repos/<entity>/`, re-sync |
-| `essentials git-identity edit <entity>` | edit an entity's identity in `$EDITOR`, re-sync |
 | `essentials git-identity sync` | regenerate the `includeIf` blocks from `~/repos` |
+
+`add`/`edit` are fully automated — one command writes the identity, encrypts it
+into the repo, asserts the ciphertext leaks no plaintext (aborts otherwise),
+commits only that `.age` file, and pushes. Pass `--no-push` to stop before push.
 
 How it wires up (no manual editing needed):
 - `~/.config/git/config` ends with `[include] conf.d/identities.gitconfig`.
 - `~/bins/git-identities-sync` regenerates that file on **every** `chezmoi apply`
   with one `[includeIf "gitdir:~/repos/<entity>/"]` per entity dir.
-- Per-entity files live at `~/.config/git/conf.d/<entity>.gitconfig`; persist them
-  encrypted across machines with `essentials secret-add <that file>`.
+- Per-entity files live at `~/.config/git/conf.d/<entity>.gitconfig`, persisted
+  encrypted as `conf.d/encrypted_<entity>.gitconfig.age` in the repo.
 - On a fresh machine with no `~/repos`, the entities you've encrypted are
-  recreated as directories automatically.
+  recreated as directories automatically (`chezmoi update`).
 
 ## Shell keybindings
 

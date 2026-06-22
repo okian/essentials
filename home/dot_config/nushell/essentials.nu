@@ -97,8 +97,45 @@ def "essentials git-identity list" [] {
       }
 }
 
-# Create/overwrite an entity identity, ensure its ~/repos dir, and re-sync.
-def "essentials git-identity add" [entity: string, email: string, name?: string] {
+# Abort if any secret (email/name) appears as plaintext in the encrypted blob.
+# The .age is binary ciphertext, so a hit means encryption silently failed.
+def _gi_assert_encrypted [agefile: string, needles: list<string>] {
+  if not ($agefile | path exists) {
+    error make { msg: $"expected encrypted file not found: ($agefile)" }
+  }
+  for needle in $needles {
+    if ($needle | str trim | is-empty) { continue }
+    if (^grep -aiF $needle $agefile | complete | get exit_code) == 0 {
+      error make { msg: $"ABORT: plaintext \"($needle)\" found in ($agefile | path basename) — refusing to commit" }
+    }
+  }
+}
+
+# Encrypt a per-entity file into the dotfiles repo, assert no leak, commit only
+# that one .age file, and (unless --no-push) push. Needs chezmoi.
+def _gi_persist [entity: string, needles: list<string>, push: bool] {
+  if (which chezmoi | is-empty) {
+    print $"chezmoi not installed — ~/.config/git/conf.d/($entity).gitconfig saved locally only."
+    print "Install chezmoi, then re-run to encrypt + commit + push."
+    return
+  }
+  let pef = (_gi_file $entity)
+  ^chezmoi add --encrypt $pef
+  let src = (^chezmoi source-path $pef | str trim)
+  _gi_assert_encrypted $src $needles
+  ^chezmoi git -- add $src
+  ^chezmoi git -- commit -m $"secret: ($entity) git identity" -- $src
+  if $push {
+    ^chezmoi git -- push
+    print $"==> encrypted, committed & pushed ($src | path basename) ✔"
+  } else {
+    print $"==> encrypted & committed ($src | path basename) — push with:  chezmoi git -- push"
+  }
+}
+
+# Create/overwrite an entity identity, then encrypt + commit + push (--no-push
+# to stop before pushing). e.g. essentials git-identity add cuju you@cuju.org
+def "essentials git-identity add" [entity: string, email: string, name?: string, --no-push] {
   let confd = (_gi_confd)
   mkdir $confd
   let nm = ($name | default (try { ^git config --global user.name | str trim } catch { '' }))
@@ -111,19 +148,26 @@ def "essentials git-identity add" [entity: string, email: string, name?: string]
   mkdir ($nu.home-dir | path join 'repos' $entity)
   essentials git-identity sync
   print $"==> wrote ($pef) and ensured ~/repos/($entity)/"
-  print $"Persist it encrypted across machines:  essentials secret-add ($pef)"
+  _gi_persist $entity [$email $nm] (not $no_push)
 }
 
-# Edit an entity's identity in $EDITOR, then re-sync.
-def "essentials git-identity edit" [entity: string] {
+# Edit an entity's identity in $EDITOR; if it changed, re-encrypt + commit + push.
+def "essentials git-identity edit" [entity: string, --no-push] {
   let pef = (_gi_file $entity)
   if not ($pef | path exists) {
     print $"no such identity: ($entity). Create it with `essentials git-identity add ($entity) <email>`."
     return
   }
+  let before = (open --raw $pef | hash sha256)
   ^$env.EDITOR $pef
+  if (open --raw $pef | hash sha256) == $before {
+    print "no changes — nothing to commit."
+    return
+  }
   essentials git-identity sync
-  print $"Persist the change encrypted:  essentials secret-add ($pef)"
+  let email = (try { ^git config -f $pef user.email | str trim } catch { '' })
+  let nm    = (try { ^git config -f $pef user.name  | str trim } catch { '' })
+  _gi_persist $entity [$email $nm] (not $no_push)
 }
 
 # --- Global git hooks ------------------------------------------------------
