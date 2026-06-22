@@ -31,6 +31,13 @@ if brew list --cask emacs-app >/dev/null 2>&1; then
   brew uninstall --cask emacs-app || true
 fi
 
+# A homebrew-core `emacs` formula owns the same bins (emacs/emacsclient/etags…)
+# and blocks emacs-plus@30 from linking during the bundle. Unlink it first.
+if brew list --formula emacs >/dev/null 2>&1; then
+  echo "==> unlinking core emacs formula (conflicts with emacs-plus@30)"
+  brew unlink emacs || true
+fi
+
 # Tap + trust third-party taps *before* the bundle. Recent Homebrew refuses to
 # load a formula from an untrusted tap; `brew trust` whitelists it. Both are
 # best-effort: older Homebrew has no `trust` subcommand and requires no trust.
@@ -61,6 +68,10 @@ BREWFILE
 # emacs-plus installs Emacs.app under the Cellar; link it where Spotlight,
 # Finder, and `open -a Emacs` look (~/Applications is user-writable, no sudo).
 if brew list --formula emacs-plus@30 >/dev/null 2>&1; then
+  # Ensure emacs-plus owns the CLI symlinks even if a core `emacs` formula built
+  # them first (its link step can fail mid-bundle, leaving emacs-plus unlinked).
+  brew unlink emacs >/dev/null 2>&1 || true
+  brew link --overwrite emacs-plus@30 >/dev/null 2>&1 || true
   emacs_app="$(brew --prefix)/opt/emacs-plus@30/Emacs.app"
   if [ -d "$emacs_app" ]; then
     mkdir -p "$HOME/Applications"
