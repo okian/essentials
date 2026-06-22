@@ -26,6 +26,7 @@ alias lg = lazygit
 alias v = nvim
 alias vim = nvim
 alias cat = bat
+alias top = btop
 # Container muscle-memory: docker -> podman.
 alias docker = podman
 alias dc = podman-compose
@@ -47,6 +48,17 @@ def --env fcd [] {
   let dir = (^fd --type d --hidden --follow --exclude .git
     | ^fzf --preview 'eza --tree --level=2 --color=always {}' | str trim)
   if ($dir | is-not-empty) { cd $dir }
+}
+
+# `y` opens yazi and cd's to wherever you quit it. Hardened over the official
+# wrapper: `try` around yazi so the temp file is always cleaned up, and the
+# path is trimmed before the comparison.
+def --env y [...args] {
+  let tmp = (mktemp -t "yazi-cwd.XXXXX")
+  try { ^yazi ...$args --cwd-file $tmp }
+  let cwd = (open $tmp | str trim)
+  rm -fp $tmp
+  if $cwd != "" and $cwd != $env.PWD { cd $cwd }
 }
 
 # starship / zoxide / carapace / atuin are auto-sourced from the vendor autoload
