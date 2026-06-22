@@ -18,9 +18,9 @@ fi
 DOOM_BIN="$HOME/.config/emacs/bin/doom"
 if [ -x "$DOOM_BIN" ] && command -v emacs >/dev/null 2>&1; then
   echo "==> doom sync"
-  if [ ! -f "$HOME/.config/emacs/.local/etc/@/init.el" ]; then
-    "$DOOM_BIN" install --no-config --no-fonts --force || true
-  fi
+  # `doom sync` builds packages + profile from ~/.config/doom on a fresh clone
+  # too — no `doom install` needed. (doom install is an interactive wizard whose
+  # flags drift between versions; --no-fonts was removed in Doom 2.2.)
   "$DOOM_BIN" sync || true
 fi
 # --- tmux plugins (tpm cloned via .chezmoiexternal.toml) --------------------
