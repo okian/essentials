@@ -30,17 +30,24 @@ if brew list --cask emacs-app >/dev/null 2>&1; then
   echo "==> removing emacs-app cask (superseded by emacs-plus@30)"
   brew uninstall --cask emacs-app || true
 fi
+
+# Tap + trust third-party taps *before* the bundle. Recent Homebrew refuses to
+# load a formula from an untrusted tap; `brew trust` whitelists it. Both are
+# best-effort: older Homebrew has no `trust` subcommand and requires no trust.
+{{ range .packages.brew_taps -}}
+brew tap {{ . }} >/dev/null 2>&1 || true
+brew trust {{ . }} </dev/null >/dev/null 2>&1 || true
+{{ end -}}
 {{ end -}}
 
 echo "==> brew bundle"
-brew bundle --file=/dev/stdin <<'BREWFILE'
+# HOMEBREW_NO_AUTO_UPDATE: don't let brew rebase its own repos mid-bundle
+# (noisy, and slow); `dots update` refreshes Homebrew separately.
+HOMEBREW_NO_AUTO_UPDATE=1 brew bundle --file=/dev/stdin <<'BREWFILE'
 {{ range .packages.brew_formulae -}}
 brew "{{ . }}"
 {{ end -}}
 {{ if .isMac -}}
-{{ range .packages.brew_taps -}}
-tap "{{ . }}"
-{{ end -}}
 {{ range .packages.mac_brew_formulae -}}
 brew "{{ . }}"
 {{ end -}}

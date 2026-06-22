@@ -132,10 +132,10 @@ packages:
     - alacritty
     # ai / containers
     - claude
-    - ollama
+    - ollama-app    # renamed from `ollama` (the cask) in Homebrew
     # utilities / comms
     - google-chrome
-    - tailscale
+    - tailscale-app   # renamed from `tailscale` (the cask) in Homebrew
     - discord
     - iina
 
