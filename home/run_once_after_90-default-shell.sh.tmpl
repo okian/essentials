@@ -22,6 +22,8 @@ fi
 current="$(getent passwd "$USER" 2>/dev/null | cut -d: -f7 || dscl . -read "/Users/$USER" UserShell 2>/dev/null | awk '{print $2}')"
 if [ "$current" != "$NU" ]; then
   echo "==> Setting default shell to nushell"
-  chsh -s "$NU" || echo "    chsh failed (may need a password). Run: chsh -s $NU"
+  # Use sudo (already primed in preflight) so this doesn't pop a separate
+  # password prompt at the very end of the bootstrap.
+  $SUDO chsh -s "$NU" "$USER" || echo "    chsh failed. Run: chsh -s $NU"
 fi
 echo "==> default-shell done"

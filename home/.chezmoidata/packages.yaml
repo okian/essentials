@@ -36,7 +36,8 @@ packages:
     - atuin
     # editors
     - neovim
-    - emacs
+    # (GUI Emacs is installed per-OS: brew cask emacs-app on macOS,
+    #  apt emacs on Linux — both ship the emacs/emacsclient CLI Doom needs.)
     # fuzzy finding + navigation
     - fzf
     - zoxide
@@ -120,6 +121,7 @@ packages:
     - wezterm
     - font-jetbrains-mono-nerd-font
     # editors / terminals
+    - emacs-app     # GUI Emacs.app (also symlinks emacs/emacsclient onto PATH)
     - zed
     - alacritty
     # ai / containers
@@ -134,6 +136,7 @@ packages:
   # Linux desktop extras (only used when a GUI session is present).
   linux_apt:
     - fonts-jetbrains-mono
+    - emacs           # GUI Emacs (emacs-gtk) + emacsclient CLI
     # nvim system clipboard + archive tooling (mac has pbcopy/built-in)
     - wl-clipboard
     - xclip
