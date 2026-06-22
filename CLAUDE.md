@@ -97,3 +97,16 @@ shared helpers and config resolution (`git config hooks.<key>` overrides
 `~/.config/git/hooks.conf` defaults). Note: committing directly to a protected branch (`main`,
 …) is blocked by default — `git config hooks.allowProtected true` in solo repos. Bypass with
 `--no-verify` or `HOOKS_DISABLE=1`.
+
+## Per-entity git identities
+
+Each top-level dir under `~/repos` is an "entity" (work/personal/NGO) with its own git
+identity. `home/bins/executable_git-identities-sync` (installed to `~/bins`, on PATH) regenerates
+`~/.config/git/conf.d/identities.gitconfig` — one `[includeIf "gitdir:~/repos/<entity>/"]` per
+entity dir, each pointing at `conf.d/<entity>.gitconfig`. The global `git/config.tmpl` ends with
+`[include] conf.d/identities.gitconfig` so a matching entity's `[user]` overrides the global one.
+`run_after_45-git-identities` (a plain `run_`, so it runs **every** apply) invokes the generator;
+`essentials git-identity {sync,list,add,edit}` are the nushell front-ends. Per-entity files are
+created only when missing (never clobbered) and persisted across machines as age-encrypted
+`conf.d/*.gitconfig` (gated in `.chezmoiignore` when no key); when `~/repos` is empty those
+encrypted entities are recreated as dirs. Don't hand-edit `identities.gitconfig` — it's generated.

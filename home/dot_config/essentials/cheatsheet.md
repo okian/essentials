@@ -38,6 +38,30 @@ View anytime with `essentials cheatsheet` (nushell) or `cheatsheet` (zsh).
 | `essentials cheatsheet` | open this file |
 | `essentials hooks status` | global git-hooks state; `enable`/`disable`/`test` |
 | `essentials secret-add <p>` | encrypt a file & stage it into the repo |
+| `essentials git-identity …` | per-entity git identities (see below) |
+
+## Per-entity git identities (`~/repos/<entity>/`)
+
+Each top-level directory under `~/repos` is an **entity** (work, personal, NGO…)
+with its own git name/email/signing key. Any repo cloned under
+`~/repos/cuju/` automatically commits as your *cuju* identity; anything outside
+`~/repos` uses the global identity.
+
+| Command | What it does |
+|---------|--------------|
+| `essentials git-identity list` | show each entity's resolved name/email + whether its dir exists |
+| `essentials git-identity add <entity> <email> [name]` | create the identity, make `~/repos/<entity>/`, re-sync |
+| `essentials git-identity edit <entity>` | edit an entity's identity in `$EDITOR`, re-sync |
+| `essentials git-identity sync` | regenerate the `includeIf` blocks from `~/repos` |
+
+How it wires up (no manual editing needed):
+- `~/.config/git/config` ends with `[include] conf.d/identities.gitconfig`.
+- `~/bins/git-identities-sync` regenerates that file on **every** `chezmoi apply`
+  with one `[includeIf "gitdir:~/repos/<entity>/"]` per entity dir.
+- Per-entity files live at `~/.config/git/conf.d/<entity>.gitconfig`; persist them
+  encrypted across machines with `essentials secret-add <that file>`.
+- On a fresh machine with no `~/repos`, the entities you've encrypted are
+  recreated as directories automatically.
 
 ## Shell keybindings
 

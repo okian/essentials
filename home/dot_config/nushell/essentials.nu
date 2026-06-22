@@ -66,6 +66,66 @@ def "essentials secret-add" [path: string] {
   print "Commit & push:  chezmoi git -- add . ; chezmoi git -- commit -m secret ; chezmoi git -- push"
 }
 
+# --- Per-entity git identities (driven by ~/repos) -------------------------
+# Each top-level dir under ~/repos is an entity (work, personal, NGO…) with its
+# own git identity. See ~/bins/git-identities-sync for the full mechanism.
+
+def _gi_confd [] { $nu.home-dir | path join '.config' 'git' 'conf.d' }
+def _gi_file [entity: string] { (_gi_confd) | path join $"($entity).gitconfig" }
+
+# Regenerate the includeIf blocks from the current ~/repos layout.
+def "essentials git-identity sync" [] {
+  let bin = ($nu.home-dir | path join 'bins' 'git-identities-sync')
+  if ($bin | path exists) { ^$bin } else { print "git-identities-sync not installed — run `chezmoi apply`" }
+}
+
+# List entities, their resolved identity, and whether a ~/repos dir exists.
+def "essentials git-identity list" [] {
+  let confd = (_gi_confd)
+  if not ($confd | path exists) { print "no identities yet — run `essentials git-identity sync`"; return }
+  let repos = ($nu.home-dir | path join 'repos')
+  glob ($confd | path join '*.gitconfig')
+    | where {|p| ($p | path basename) != 'identities.gitconfig' }
+    | each {|p|
+        let e = ($p | path basename | str replace --regex '\.gitconfig$' '')
+        {
+          entity: $e
+          name: (try { ^git config -f $p user.name | str trim } catch { '' })
+          email: (try { ^git config -f $p user.email | str trim } catch { '' })
+          repo_dir: (($repos | path join $e | path exists))
+        }
+      }
+}
+
+# Create/overwrite an entity identity, ensure its ~/repos dir, and re-sync.
+def "essentials git-identity add" [entity: string, email: string, name?: string] {
+  let confd = (_gi_confd)
+  mkdir $confd
+  let nm = ($name | default (try { ^git config --global user.name | str trim } catch { '' }))
+  let pef = (_gi_file $entity)
+  ([$"# git identity for \"($entity)\" — managed via `essentials git-identity`."
+    "[user]"
+    $"\tname = ($nm)"
+    $"\temail = ($email)"
+    ""] | str join (char nl)) | save -f $pef
+  mkdir ($nu.home-dir | path join 'repos' $entity)
+  essentials git-identity sync
+  print $"==> wrote ($pef) and ensured ~/repos/($entity)/"
+  print $"Persist it encrypted across machines:  essentials secret-add ($pef)"
+}
+
+# Edit an entity's identity in $EDITOR, then re-sync.
+def "essentials git-identity edit" [entity: string] {
+  let pef = (_gi_file $entity)
+  if not ($pef | path exists) {
+    print $"no such identity: ($entity). Create it with `essentials git-identity add ($entity) <email>`."
+    return
+  }
+  ^$env.EDITOR $pef
+  essentials git-identity sync
+  print $"Persist the change encrypted:  essentials secret-add ($pef)"
+}
+
 # --- Global git hooks ------------------------------------------------------
 
 # Show hook status (where they live, enabled?, available tools).
@@ -126,6 +186,7 @@ def "essentials" [] {
   print "  essentials update            upgrade configs + all toolchains to latest"
   print "  essentials secrets-setup     generate the age key (run once, trusted machine)"
   print "  essentials secret-add <p>    encrypt a file & add it to the repo"
+  print "  essentials git-identity ...  per-entity git identities: sync|list|add|edit"
   print "  essentials hooks status      show global git-hooks state"
   print "  essentials hooks enable|disable|test"
   print "  essentials tip | tips        random / all usage tips"

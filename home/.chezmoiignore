@@ -18,4 +18,7 @@ Library/
 .secrets
 .ssh/id_*
 !.ssh/id_*.pub
+# Encrypted per-entity git identities (decrypt to ~/.config/git/conf.d/*.gitconfig).
+# The generator still runs and falls back to the global identity here.
+.config/git/conf.d
 {{ end }}
