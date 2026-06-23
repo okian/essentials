@@ -122,3 +122,18 @@ encrypted entities are recreated as dirs. Don't hand-edit `identities.gitconfig`
 The generator also self-heals the global wiring: if `~/.config/git/config` lacks the
 `[include] conf.d/identities.gitconfig` line (e.g. a stale global config), it adds it idempotently
 (via `git config --file`, matching the template's format so chezmoi sees no diff).
+
+## Color themes (`dots theme`)
+
+`home/dot_config/dots/themes.nu` is the registry (slug → display name, per-tool ids, a 14-colour
+palette) **and** the `dots theme {list,set,pick}` commands. `dots theme set <slug>` writes generated,
+NOT-chezmoi-managed files under `~/.config/dots/` (`theme`, `palette.json`, `active-theme.sh`,
+`starship.toml`) + `~/.config/tmux/active-theme.conf`, then live-reloads. Each tool reads those with a
+built-in fallback, so nothing breaks before first use:
+- **WezTerm** reads `palette.json` → `config.colors`, and `add_to_config_reload_watch_list` makes it hot-reload.
+- **nushell** `config.nu` reads the active palette (`_theme_active`) → `color_config` + FZF/`BAT_THEME`/`STARSHIP_CONFIG`.
+- **zsh** sources `active-theme.sh`; **tmux** sources `active-theme.conf`; **starship** points `STARSHIP_CONFIG` at the palette-swapped copy (the committed `starship.toml` holds all `[palettes.*]`, stays clean).
+- **Neovim** (`plugins/colorscheme.lua`) and **Doom** (`config.el`) read the slug and map it to a real colorscheme; all theme plugins are installed.
+`run_after_46-theme` regenerates the active files on every apply (so they exist + re-assert after chezmoi
+rewrites managed configs). To add a theme: add a registry entry (palette + nvim/doom/bat/starship ids), a
+`[palettes.<id>]` block in `starship.toml`, and ensure the nvim plugin + Doom theme exist.

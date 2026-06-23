@@ -1,0 +1,227 @@
+# themes.nu — theme registry + the `dots theme` switcher. Sourced by config.nu.
+#
+# One command retints everything. The active theme is captured in generated
+# files under ~/.config/dots/ (NOT chezmoi-managed), which every tool reads:
+#   theme           active theme slug
+#   palette.json    full active theme entry (read by nushell + WezTerm)
+#   active-theme.sh POSIX exports (FZF colors, BAT_THEME, STARSHIP_CONFIG) for zsh
+#   starship.toml   committed starship config with the active palette selected
+# plus ~/.config/tmux/active-theme.conf. Neovim and Doom read the slug and map
+# it to their own real colorscheme. Everything falls back to the default below,
+# so a fresh machine renders correctly before `dots theme` is ever run.
+
+const THEME_DEFAULT = "catppuccin-mocha"
+
+# --- Registry: slug -> { display name, per-tool ids, 14-colour palette } -----
+def _theme_registry [] {
+  {
+    catppuccin-mocha: {
+      name: "Catppuccin Mocha"
+      nvim: "catppuccin-mocha"  doom: "catppuccin"        doom_flavor: "mocha"
+      bat: "base16"             starship: "catppuccin_mocha"
+      palette: {
+        bg: "#1e1e2e"  bg_dark: "#11111b"  surface: "#313244"  overlay: "#6c7086"
+        fg: "#cdd6f4"  subtle: "#a6adc8"
+        red: "#f38ba8"  green: "#a6e3a1"  yellow: "#f9e2af"  blue: "#89b4fa"
+        magenta: "#cba6f7"  cyan: "#94e2d5"  orange: "#fab387"  accent: "#cba6f7"
+      }
+    }
+    nord: {
+      name: "Nord"
+      nvim: "nord"  doom: "doom-nord"  doom_flavor: ""
+      bat: "Nord"   starship: "nord"
+      palette: {
+        bg: "#2e3440"  bg_dark: "#272c36"  surface: "#3b4252"  overlay: "#4c566a"
+        fg: "#d8dee9"  subtle: "#7b88a1"
+        red: "#bf616a"  green: "#a3be8c"  yellow: "#ebcb8b"  blue: "#81a1c1"
+        magenta: "#b48ead"  cyan: "#88c0d0"  orange: "#d08770"  accent: "#88c0d0"
+      }
+    }
+    tokyo-night: {
+      name: "Tokyo Night"
+      nvim: "tokyonight-night"  doom: "doom-tokyo-night"  doom_flavor: ""
+      bat: "base16"             starship: "tokyo_night"
+      palette: {
+        bg: "#1a1b26"  bg_dark: "#16161e"  surface: "#292e42"  overlay: "#565f89"
+        fg: "#c0caf5"  subtle: "#a9b1d6"
+        red: "#f7768e"  green: "#9ece6a"  yellow: "#e0af68"  blue: "#7aa2f7"
+        magenta: "#bb9af7"  cyan: "#7dcfff"  orange: "#ff9e64"  accent: "#7aa2f7"
+      }
+    }
+    gruvbox-dark: {
+      name: "Gruvbox Dark"
+      nvim: "gruvbox"  doom: "doom-gruvbox"  doom_flavor: ""
+      bat: "gruvbox-dark"  starship: "gruvbox_dark"
+      palette: {
+        bg: "#282828"  bg_dark: "#1d2021"  surface: "#3c3836"  overlay: "#928374"
+        fg: "#ebdbb2"  subtle: "#a89984"
+        red: "#fb4934"  green: "#b8bb26"  yellow: "#fabd2f"  blue: "#83a598"
+        magenta: "#d3869b"  cyan: "#8ec07c"  orange: "#fe8019"  accent: "#fabd2f"
+      }
+    }
+  }
+}
+
+def _theme_dir [] { $nu.home-dir | path join '.config' 'dots' }
+
+# Active slug (validated against the registry; falls back to the default).
+def _theme_current [] {
+  let f = (_theme_dir | path join 'theme')
+  if ($f | path exists) {
+    let v = (open $f | str trim)
+    if ($v in (_theme_registry | columns)) { $v } else { $THEME_DEFAULT }
+  } else { $THEME_DEFAULT }
+}
+
+# Active theme entry — from the generated palette.json if present, else the
+# registry. Lets config.nu / WezTerm work before `dots theme` is ever run.
+def _theme_active [] {
+  let f = (_theme_dir | path join 'palette.json')
+  if ($f | path exists) {
+    try { open $f } catch { _theme_registry | get (_theme_current) }
+  } else {
+    _theme_registry | get (_theme_current)
+  }
+}
+
+# Build a nushell color_config record from a palette (used by config.nu).
+def color_config_from_palette [p: record] {
+  {
+    separator: $p.overlay
+    header: { fg: $p.subtle attr: b }
+    row_index: $p.overlay
+    empty: $p.overlay
+    leading_trailing_space_bg: { attr: n }
+    bool: $p.cyan
+    int: $p.fg
+    filesize: $p.orange
+    duration: $p.orange
+    date: $p.subtle
+    range: $p.fg
+    float: $p.fg
+    string: $p.fg
+    nothing: $p.overlay
+    cell-path: $p.subtle
+    hints: $p.overlay
+    search_result: { fg: $p.bg bg: $p.yellow }
+    shape_directory: { fg: $p.blue attr: b }
+    shape_external: $p.cyan
+    shape_internalcall: { fg: $p.cyan attr: b }
+    shape_flag: { fg: $p.magenta attr: b }
+    shape_string: $p.green
+    shape_filepath: $p.cyan
+    shape_globpattern: $p.cyan
+    shape_int: $p.orange
+    shape_literal: $p.blue
+    shape_operator: $p.cyan
+    shape_pipe: { fg: $p.magenta attr: b }
+    shape_garbage: { fg: $p.bg bg: $p.red }
+    shape_variable: $p.magenta
+  }
+}
+
+# FZF --color string for a palette.
+def fzf_opts_from_palette [p: record] {
+  ('--height 45% --layout reverse --border --info inline'
+    + $' --color=bg+:($p.surface),bg:($p.bg),spinner:($p.accent),hl:($p.red)'
+    + $' --color=fg:($p.fg),header:($p.red),info:($p.magenta),pointer:($p.accent)'
+    + $' --color=marker:($p.green),fg+:($p.fg),prompt:($p.magenta),hl+:($p.red)')
+}
+
+# tmux statusline (palette-driven, theme-agnostic).
+def _theme_tmux_conf [p: record] {
+  ([
+    "# generated by `dots theme` — sourced by ~/.tmux.conf. DO NOT EDIT."
+    $"set -g status-style 'bg=($p.bg_dark),fg=($p.fg)'"
+    $"set -g window-status-current-style 'bg=($p.accent),fg=($p.bg_dark),bold'"
+    $"set -g window-status-style 'bg=($p.bg_dark),fg=($p.subtle)'"
+    $"set -g pane-border-style 'fg=($p.surface)'"
+    $"set -g pane-active-border-style 'fg=($p.accent)'"
+    $"set -g message-style 'bg=($p.surface),fg=($p.fg)'"
+    $"set -g mode-style 'bg=($p.accent),fg=($p.bg_dark)'"
+    "set -g status-left-length 30"
+    $"set -g status-left '#[bg=($p.accent),fg=($p.bg_dark),bold] #S #[default] '"
+    $"set -g status-right '#[fg=($p.subtle)] %a %d %b  %H:%M '"
+  ] | str join (char nl)) + (char nl)
+}
+
+# POSIX exports for the zsh fallback shell.
+def _theme_sh [t: record] {
+  let p = $t.palette
+  let ss = ($nu.home-dir | path join '.config' 'dots' 'starship.toml')
+  ([
+    "# generated by `dots theme` — sourced by ~/.zshrc. DO NOT EDIT."
+    $"export BAT_THEME='($t.bat)'"
+    $"export FZF_DEFAULT_OPTS='(fzf_opts_from_palette $p)'"
+    $"export STARSHIP_CONFIG='($ss)'"
+  ] | str join (char nl)) + (char nl)
+}
+
+# Regenerate every active-theme artifact for <slug>, then live-reload.
+def _theme_apply [slug: string] {
+  let t = (_theme_registry | get $slug)
+  let d = (_theme_dir)
+  mkdir $d
+  $slug | save -f ($d | path join 'theme')
+  $t | to json | save -f ($d | path join 'palette.json')
+  (_theme_sh $t) | save -f ($d | path join 'active-theme.sh')
+  mkdir ($nu.home-dir | path join '.config' 'tmux')
+  (_theme_tmux_conf $t.palette) | save -f ($nu.home-dir | path join '.config' 'tmux' 'active-theme.conf')
+
+  # starship: copy the committed config with the active palette selected, so
+  # the committed file stays untouched (no perpetual `dots diff`).
+  let ss_src = ($nu.home-dir | path join '.config' 'starship.toml')
+  if ($ss_src | path exists) {
+    open --raw $ss_src | lines | each {|l|
+      if ($l | str trim | str starts-with 'palette ') { $'palette = "($t.starship)"' } else { $l }
+    } | str join (char nl) | save -f ($d | path join 'starship.toml')
+  }
+
+  _theme_reload $t
+}
+
+# Live-reload running apps where we can (best-effort, never fails).
+def _theme_reload [t: record] {
+  if (which tmux | is-not-empty) and ('TMUX' in $env) {
+    ^tmux source-file ($nu.home-dir | path join '.config' 'tmux' 'active-theme.conf') | complete | ignore
+  }
+  if (which emacsclient | is-not-empty) {
+    let elisp = (if ($t.doom_flavor | is-empty) {
+      "(load-theme '" + $t.doom + " t)"
+    } else {
+      "(progn (setq catppuccin-flavor '" + $t.doom_flavor + ") (load-theme '" + $t.doom + " t) (when (fboundp 'catppuccin-reload) (catppuccin-reload)))"
+    })
+    # silent + non-fatal when no Emacs daemon is running
+    ^emacsclient --eval $elisp | complete | ignore
+  }
+  # WezTerm watches palette.json and reloads itself; starship rereads
+  # STARSHIP_CONFIG on the next prompt.
+}
+
+# --- User-facing commands ---------------------------------------------------
+
+# List available themes (● marks the active one).
+def "dots theme list" [] {
+  let cur = (_theme_current)
+  _theme_registry | transpose slug meta | each {|r|
+    { "  ": (if $r.slug == $cur { "●" } else { " " }) theme: $r.slug name: $r.meta.name }
+  }
+}
+
+# Switch the theme everywhere. e.g. dots theme set nord
+def "dots theme set" [slug: string] {
+  if ($slug not-in (_theme_registry | columns)) {
+    print $"unknown theme '($slug)'. Available: (_theme_registry | columns | str join ', ')"
+    return
+  }
+  _theme_apply $slug
+  print $"==> theme → ($slug). WezTerm, tmux & a running Emacs retint live; new nu & nvim shells pick it up — run `exec nu` to retint this one."
+}
+
+# Bare `dots theme`: fuzzy-pick a theme (or just list if fzf is absent).
+def "dots theme" [] {
+  if (which fzf | is-empty) { dots theme list; return }
+  let pick = (_theme_registry | columns | str join (char nl)
+    | ^fzf --prompt 'theme> ' --height 40% --info inline | str trim)
+  if ($pick | is-not-empty) { dots theme set $pick }
+}

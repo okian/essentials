@@ -1,13 +1,12 @@
 # config.nu — managed by chezmoi.
 
-# Catppuccin Mocha palette — matches WezTerm/FZF/tmux/Neovim.
-let mocha = {
-  rosewater: "#f5e0dc", flamingo: "#f2cdcd", pink: "#f5c2e7", mauve: "#cba6f7"
-  red: "#f38ba8", maroon: "#eba0ac", peach: "#fab387", yellow: "#f9e2af"
-  green: "#a6e3a1", teal: "#94e2d5", sky: "#89dceb", sapphire: "#74c7ec"
-  blue: "#89b4fa", lavender: "#b4befe", text: "#cdd6f4", subtext1: "#bac2de"
-  subtext0: "#a6adc8", overlay1: "#7f849c", surface0: "#313244", base: "#1e1e2e"
-}
+# Theme registry + the `dots theme` switcher; defines the active palette below.
+source ~/.config/dots/themes.nu
+
+# Active theme (set by `dots theme`; falls back to a built-in default), so the
+# nushell table colors, FZF, bat and starship all follow the chosen theme.
+let theme = (_theme_active)
+let pal = $theme.palette
 
 $env.config = {
   show_banner: false
@@ -16,39 +15,8 @@ $env.config = {
   completions: { case_sensitive: false, quick: true, partial: true, algorithm: "fuzzy" }
   history: { max_size: 100_000, file_format: "sqlite" }
 
-  # Table/value colors mapped onto the Mocha palette.
-  color_config: {
-    separator: $mocha.overlay1
-    header: { fg: $mocha.subtext0 attr: b }
-    row_index: $mocha.overlay1
-    empty: $mocha.overlay1
-    leading_trailing_space_bg: { attr: n }
-    bool: $mocha.sky
-    int: $mocha.text
-    filesize: $mocha.peach
-    duration: $mocha.peach
-    date: $mocha.subtext0
-    range: $mocha.text
-    float: $mocha.text
-    string: $mocha.text
-    nothing: $mocha.overlay1
-    cell-path: $mocha.subtext0
-    hints: $mocha.overlay1
-    search_result: { fg: $mocha.base bg: $mocha.yellow }
-    shape_directory: { fg: $mocha.blue attr: b }
-    shape_external: $mocha.teal
-    shape_internalcall: { fg: $mocha.sky attr: b }
-    shape_flag: { fg: $mocha.mauve attr: b }
-    shape_string: $mocha.green
-    shape_filepath: $mocha.teal
-    shape_globpattern: $mocha.teal
-    shape_int: $mocha.peach
-    shape_literal: $mocha.blue
-    shape_operator: $mocha.sky
-    shape_pipe: { fg: $mocha.mauve attr: b }
-    shape_garbage: { fg: $mocha.base bg: $mocha.red }
-    shape_variable: $mocha.mauve
-  }
+  # Table/value colors, derived from the active theme palette.
+  color_config: (color_config_from_palette $pal)
 
   # Completion menu, themed to match. (History search is atuin's Ctrl-R.)
   menus: [
@@ -58,9 +26,9 @@ $env.config = {
       marker: "│ "
       type: { layout: columnar columns: 4 col_padding: 2 }
       style: {
-        text: $mocha.text
-        selected_text: { fg: $mocha.base bg: $mocha.mauve }
-        description_text: $mocha.subtext0
+        text: $pal.fg
+        selected_text: { fg: $pal.bg bg: $pal.accent }
+        description_text: $pal.subtle
       }
     }
   ]
@@ -82,6 +50,13 @@ $env.config = {
     }]
   }
 }
+
+# Theme-driven environment: FZF colours, bat theme, and the active starship
+# config (a palette-swapped copy of starship.toml written by `dots theme`).
+$env.FZF_DEFAULT_OPTS = (fzf_opts_from_palette $pal)
+$env.BAT_THEME = $theme.bat
+let _ss_cfg = ($nu.home-dir | path join '.config' 'dots' 'starship.toml')
+if ($_ss_cfg | path exists) { $env.STARSHIP_CONFIG = $_ss_cfg }
 
 # Aliases
 alias ll = ls -la

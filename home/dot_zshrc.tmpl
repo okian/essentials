@@ -31,11 +31,13 @@ if command -v fd >/dev/null; then
   export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
   export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
   export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
-  # Catppuccin Mocha palette — matches WezTerm/tmux/Neovim.
-  export FZF_DEFAULT_OPTS='--height 45% --layout reverse --border --info inline --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8'
   export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers {} 2>/dev/null || eza --tree --color=always {}'"
   export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always {}'"
 fi
+
+# Active theme: FZF_DEFAULT_OPTS colours, BAT_THEME, STARSHIP_CONFIG — written
+# by `dots theme` and shared with nushell. `-r` test so a fresh machine is fine.
+[ -r ~/.config/dots/active-theme.sh ] && . ~/.config/dots/active-theme.sh
 
 # Fuzzy-find a file and open it in $EDITOR.
 ff() { local f; f=$(fd --type f --hidden --follow --exclude .git | fzf --preview 'bat --color=always --style=numbers {} 2>/dev/null'); [ -n "$f" ] && ${EDITOR:-nvim} "$f"; }

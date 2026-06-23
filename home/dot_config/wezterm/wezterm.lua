@@ -4,9 +4,48 @@ local config = wezterm.config_builder()
 local act = wezterm.action
 
 local is_mac = wezterm.target_triple:find("apple%-darwin") ~= nil
+local home = os.getenv("HOME")
+
+-- ── Theme ────────────────────────────────────────────────────────────────────
+-- Colors come from the active theme palette written by `dots theme`
+-- (~/.config/dots/palette.json). WezTerm watches that file and hot-reloads, so
+-- `dots theme set <name>` retints every open window instantly. Falls back to
+-- Catppuccin Mocha until the file exists.
+local palette_file = home .. "/.config/dots/palette.json"
+local function read_palette()
+  local f = io.open(palette_file, "r")
+  if not f then return nil end
+  local data = f:read("*a")
+  f:close()
+  local ok, parsed = pcall(wezterm.json_parse, data)
+  if ok and parsed and parsed.palette then return parsed.palette end
+  return nil
+end
+local p = read_palette() or {
+  bg = "#1e1e2e", bg_dark = "#11111b", surface = "#313244", overlay = "#6c7086",
+  fg = "#cdd6f4", subtle = "#a6adc8", red = "#f38ba8", green = "#a6e3a1",
+  yellow = "#f9e2af", blue = "#89b4fa", magenta = "#cba6f7", cyan = "#94e2d5",
+  orange = "#fab387", accent = "#cba6f7",
+}
+wezterm.add_to_config_reload_watch_list(palette_file)
+
+config.colors = {
+  foreground = p.fg, background = p.bg,
+  cursor_bg = p.accent, cursor_border = p.accent, cursor_fg = p.bg,
+  selection_bg = p.surface, selection_fg = p.fg,
+  ansi = { p.bg_dark, p.red, p.green, p.yellow, p.blue, p.magenta, p.cyan, p.subtle },
+  brights = { p.overlay, p.red, p.green, p.yellow, p.blue, p.magenta, p.cyan, p.fg },
+  tab_bar = {
+    background = p.bg_dark,
+    active_tab = { bg_color = p.surface, fg_color = p.fg },
+    inactive_tab = { bg_color = p.bg_dark, fg_color = p.subtle },
+    inactive_tab_hover = { bg_color = p.surface, fg_color = p.fg },
+    new_tab = { bg_color = p.bg_dark, fg_color = p.subtle },
+    new_tab_hover = { bg_color = p.surface, fg_color = p.fg },
+  },
+}
 
 -- ── Appearance ──────────────────────────────────────────────────────────────
-config.color_scheme = "Catppuccin Mocha"
 config.font = wezterm.font_with_fallback({
   "JetBrainsMono Nerd Font",
   "JetBrains Mono",
@@ -42,26 +81,6 @@ config.use_fancy_tab_bar = false
 config.tab_bar_at_bottom = true
 config.hide_tab_bar_if_only_one_tab = true
 config.show_new_tab_button_in_tab_bar = false
-
--- Catppuccin Mocha palette, reused by the tab/status formatters below.
-local mocha = {
-  base = "#1e1e2e", mantle = "#181825", crust = "#11111b",
-  text = "#cdd6f4", subtext = "#a6adc8", overlay = "#6c7086",
-  surface0 = "#313244",
-  mauve = "#cba6f7", green = "#a6e3a1", peach = "#fab387",
-  sky = "#89dceb", red = "#f38ba8",
-}
-
-config.colors = {
-  tab_bar = {
-    background = mocha.crust,
-    active_tab = { bg_color = mocha.surface0, fg_color = mocha.text },
-    inactive_tab = { bg_color = mocha.mantle, fg_color = mocha.subtext },
-    inactive_tab_hover = { bg_color = mocha.surface0, fg_color = mocha.text },
-    new_tab = { bg_color = mocha.crust, fg_color = mocha.subtext },
-    new_tab_hover = { bg_color = mocha.surface0, fg_color = mocha.text },
-  },
-}
 
 -- Map a foreground process to a Nerd Font glyph for the tab title.
 local function process_icon(name)
@@ -100,24 +119,24 @@ wezterm.on("update-right-status", function(window, _pane)
   local cells = {}
 
   if window:leader_is_active() then
-    table.insert(cells, { Background = { Color = mocha.peach } })
-    table.insert(cells, { Foreground = { Color = mocha.crust } })
+    table.insert(cells, { Background = { Color = p.orange } })
+    table.insert(cells, { Foreground = { Color = p.bg_dark } })
     table.insert(cells, { Text = "  " })
     table.insert(cells, "ResetAttributes")
     table.insert(cells, { Text = " " })
   end
 
-  table.insert(cells, { Foreground = { Color = mocha.green } })
+  table.insert(cells, { Foreground = { Color = p.green } })
   table.insert(cells, { Text = " " .. window:active_workspace() .. "  " })
 
   for _, b in ipairs(wezterm.battery_info()) do
     local pct = math.floor(b.state_of_charge * 100 + 0.5)
     local glyph = b.state == "Charging" and "" or ""
-    table.insert(cells, { Foreground = { Color = mocha.sky } })
+    table.insert(cells, { Foreground = { Color = p.cyan } })
     table.insert(cells, { Text = string.format("%s %d%%  ", glyph, pct) })
   end
 
-  table.insert(cells, { Foreground = { Color = mocha.mauve } })
+  table.insert(cells, { Foreground = { Color = p.accent } })
   table.insert(cells, { Text = " " .. wezterm.strftime("%H:%M") .. " " })
 
   window:set_right_status(wezterm.format(cells))

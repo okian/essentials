@@ -1,6 +1,11 @@
 # Starship prompt — managed by chezmoi.
+# The active `palette` line is swapped by `dots theme` (it writes a copy to
+# ~/.config/dots/starship.toml that the shells point STARSHIP_CONFIG at, so this
+# committed file stays clean). Module styles reference palette colour names
+# (green/red/blue/…), so switching the palette retints the whole prompt.
 add_newline = true
 command_timeout = 1000
+palette = "catppuccin_mocha"
 
 format = "$directory$git_branch$git_status$rust$golang$python$nodejs$cmd_duration$line_break$character"
 
@@ -12,20 +17,61 @@ vimcmd_symbol = "[❮](bold green)"
 [directory]
 truncation_length = 3
 truncate_to_repo = true
-style = "bold cyan"
+style = "bold blue"
 
 [git_branch]
 symbol = " "
+style = "bold magenta"
+
+[git_status]
+style = "bold red"
 
 [cmd_duration]
 min_time = 2000
-format = "[ $duration]($style) "
+format = "[ $duration](bold yellow) "
 
 [rust]
 symbol = " "
+style = "bold red"
 [golang]
 symbol = " "
+style = "bold cyan"
 [python]
 symbol = " "
+style = "bold yellow"
 [nodejs]
 symbol = " "
+style = "bold green"
+
+# --- Palettes (one per `dots theme`) ---------------------------------------
+[palettes.catppuccin_mocha]
+red = "#f38ba8"
+green = "#a6e3a1"
+yellow = "#f9e2af"
+blue = "#89b4fa"
+magenta = "#cba6f7"
+cyan = "#94e2d5"
+
+[palettes.nord]
+red = "#bf616a"
+green = "#a3be8c"
+yellow = "#ebcb8b"
+blue = "#81a1c1"
+magenta = "#b48ead"
+cyan = "#88c0d0"
+
+[palettes.tokyo_night]
+red = "#f7768e"
+green = "#9ece6a"
+yellow = "#e0af68"
+blue = "#7aa2f7"
+magenta = "#bb9af7"
+cyan = "#7dcfff"
+
+[palettes.gruvbox_dark]
+red = "#fb4934"
+green = "#b8bb26"
+yellow = "#fabd2f"
+blue = "#83a598"
+magenta = "#d3869b"
+cyan = "#8ec07c"

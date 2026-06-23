@@ -26,6 +26,23 @@ View anytime with `dots cheatsheet` (nushell) or `cheatsheet` (zsh).
 | `dots cd` | jump into the dotfiles source dir |
 | `dots managed` / `doctor` / `log` | list managed files / diagnose / history |
 
+## Color themes — one command, everywhere
+
+`dots theme` retints WezTerm, Neovim, Doom Emacs, nushell, FZF, bat, tmux and
+starship together. Built-in: **catppuccin-mocha**, **nord**, **tokyo-night**,
+**gruvbox-dark**.
+
+| Command | What it does |
+|---------|--------------|
+| `dots theme` | fuzzy-pick a theme |
+| `dots theme list` | list themes (● = active) |
+| `dots theme set nord` | switch everything to Nord |
+
+WezTerm, tmux, and a running Emacs daemon retint **instantly**; starship updates
+next prompt; new nushell/Neovim pick it up (`exec nu` to retint the current
+shell, `:colorscheme <name>` for a running nvim). The choice lives in
+`~/.config/dots/` and survives `dots pull`/`update`.
+
 ## Aliases
 
 | Alias | Runs | Notes |

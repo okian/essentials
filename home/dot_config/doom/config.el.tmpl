@@ -10,11 +10,21 @@
       doom-big-font (font-spec :family "JetBrainsMono Nerd Font" :size 20))
 (setq-default line-spacing 0.1)
 
-;; ── Theme: Catppuccin Mocha ────────────────────────────────────────────────
-;; Matches WezTerm / nushell / FZF / tmux / Neovim. catppuccin-flavor must be
-;; set before the theme loads (Doom loads doom-theme after this file).
-(setq catppuccin-flavor 'mocha
-      doom-theme 'catppuccin)
+;; ── Theme: follows `dots theme` (~/.config/dots/theme) ─────────────────────
+;; Map the active slug to a Doom theme. doom-nord/-tokyo-night/-gruvbox ship
+;; with the :ui doom module (doom-themes); catppuccin is the catppuccin-theme
+;; package. Set before Doom loads the theme (it loads doom-theme after this file).
+(let* ((slug (let ((f (expand-file-name "~/.config/dots/theme")))
+               (when (file-readable-p f)
+                 (string-trim (with-temp-buffer (insert-file-contents f) (buffer-string))))))
+       (themes '(("catppuccin-mocha" catppuccin "mocha")
+                 ("nord"             doom-nord nil)
+                 ("tokyo-night"      doom-tokyo-night nil)
+                 ("gruvbox-dark"     doom-gruvbox nil)))
+       (entry (or (assoc slug themes) (car themes))))
+  (when (nth 2 entry)
+    (setq catppuccin-flavor (intern (nth 2 entry))))
+  (setq doom-theme (nth 1 entry)))
 
 ;; Subtle frame transparency to echo the WezTerm window (opacity 0.97).
 ;; Ignored gracefully on builds without alpha-background support.
