@@ -29,6 +29,9 @@ require("lazy").setup({
     -- wired in via config/keymaps.lua (<leader>tv / <leader>tw) as the
     -- terminal-style fuzzy finder — matching the shell, where tv replaced fzf.
     { import = "lazyvim.plugins.extras.formatting.prettier" },
+    -- UI extras: dashboard-nvim as the start screen (disables snacks dashboard).
+    -- The OKIAN header override lives in plugins/dashboard.lua.
+    { import = "lazyvim.plugins.extras.ui.dashboard-nvim" },
     -- Your own overrides
     { import = "plugins" },
   },

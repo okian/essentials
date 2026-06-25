@@ -189,8 +189,17 @@ for i = 1, 9 do
   })
 end
 
--- Match more URL shapes for Ctrl/Cmd-click opening.
+-- Match more URL shapes for link detection.
 config.hyperlink_rules = wezterm.default_hyperlink_rules()
+
+-- Clicking a link COPIES it to the clipboard instead of opening it in a browser.
+-- `open-uri` fires with the link under the cursor right before WezTerm would open
+-- it; copying the URI and returning false cancels that default open.
+wezterm.on("open-uri", function(window, _pane, uri)
+  window:copy_to_clipboard(uri)
+  window:toast_notification("WezTerm", "Link copied: " .. uri, nil, 3000)
+  return false
+end)
 
 -- Uses the login shell (nushell, set by provisioning) — no default_prog needed.
 
