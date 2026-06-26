@@ -29,6 +29,9 @@ require("lazy").setup({
     -- wired in via config/keymaps.lua (<leader>tv / <leader>tw) as the
     -- terminal-style fuzzy finder — matching the shell, where tv replaced fzf.
     { import = "lazyvim.plugins.extras.formatting.prettier" },
+    -- neotest core: activates the test runner so the go/python/rust lang
+    -- extras' (optional) neotest adapters load. Gives <leader>t… test keymaps.
+    { import = "lazyvim.plugins.extras.test.core" },
     -- UI extras: dashboard-nvim as the start screen (disables snacks dashboard).
     -- The OKIAN header override lives in plugins/dashboard.lua.
     { import = "lazyvim.plugins.extras.ui.dashboard-nvim" },
