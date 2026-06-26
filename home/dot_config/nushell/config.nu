@@ -96,6 +96,19 @@ def --env fcd [] {
   if ($dir | is-not-empty) { cd $dir }
 }
 
+# Fuzzy-search code symbols (classes/funcs/vars) in the current project and jump
+# to one (television's `symbols` channel: universal-ctags index, bat preview
+# scrolled to the line, Enter opens it in the editor). Terminal counterpart to
+# Neovim's LSP symbol search.
+def fsym [] { ^tv symbols }
+
+# Pick a git project under ~/repos or ~/projects and cd into it (television's
+# `projects` channel; Ctrl-S inside jumps to that repo's symbols, Ctrl-E edits).
+def --env proj [] {
+  let dir = (^tv projects | str trim)
+  if ($dir | is-not-empty) { cd $dir }
+}
+
 # `y` opens yazi and cd's to wherever you quit it. Hardened over the official
 # wrapper: `try` around yazi so the temp file is always cleaned up, and the
 # path is trimmed before the comparison.

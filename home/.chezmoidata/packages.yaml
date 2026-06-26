@@ -49,6 +49,8 @@ packages:
     - fd
     - bat
     - eza
+    - universal-ctags  # symbol index for the `tv symbols` channel (json output; the
+                       # macOS-bundled /usr/bin/ctags can't do this)
     # git + tooling
     - git
     - git-delta

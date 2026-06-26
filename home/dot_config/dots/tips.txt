@@ -18,6 +18,8 @@ Press Ctrl-R for fuzzy shell-history search (television) — type any fragment o
 Press Ctrl-T to fuzzy-complete the current command (television) — files, branches, processes, depending on context.
 `tv` opens the fuzzy finder; `tv text` greps file contents, `tv tldr` browses cheatsheets, and any list pipes in: `git branch | tv`.
 `ff` fuzzy-finds a file and opens it in Neovim; `fcd` jumps into a directory (both via television).
+`fsym` (or `tv symbols`) fuzzy-searches code symbols — classes/funcs/vars via universal-ctags — and opens the pick in Neovim at its line.
+`proj` (or `tv projects`) picks a git repo under ~/repos or ~/projects and cd's in; Ctrl-S jumps straight to that repo's symbols.
 In Neovim: `<space>ff` finds files, `<space>/` greps the project, `<space>tv` opens the television picker.
 
 # --- editing ---

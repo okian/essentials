@@ -28,6 +28,13 @@ A two-step rhythm beats scrolling: **filter to candidates, then act.**
 - **Find-then-edit in one move:** `ff` lists files through television with a bat
   preview and opens your pick in Neovim. For content, `tv text` greps and prints,
   or do it inside the editor: `nvim` then `<leader>/` (or `<leader>tw`).
+- **Jump to a symbol (terminal):** `fsym` (or `tv symbols`) fuzzy-searches the
+  current project's classes/functions/variables via universal-ctags — the preview
+  scrolls to the definition and Enter opens Neovim there. Filter by symbol name,
+  kind, or file path; it's the terminal twin of Neovim's LSP symbol search.
+- **Jump to a project:** `proj` (or `tv projects`) lists git repos under `~/repos`
+  and `~/projects` with a README/tree preview; Enter cd's in, `Ctrl-S` opens that
+  repo's symbols, `Ctrl-E` opens it in Neovim.
 - **Pipe into `tv`** whenever a command spits a long list:
   `git branch | tv`, `brew leaves | tv`, `rg -l TODO | tv`.
 - **Cheatsheets:** `tv tldr` fuzzy-browses tldr pages; `tldr <cmd>` prints one.

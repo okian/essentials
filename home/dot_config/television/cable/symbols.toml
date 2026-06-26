@@ -1,0 +1,34 @@
+# Custom television channel — managed by chezmoi.
+# Fuzzy-search code symbols (classes/functions/vars/…) in the current project:
+# `tv symbols` (or the `fsym` nushell helper). Powered by universal-ctags — it
+# indexes ~150 languages into name/kind/file/line, which `tv` consumes directly.
+# This is the terminal counterpart to Neovim's LSP workspace-symbol search.
+#
+# Mirrors the bundled `text.toml`: source emits `path:line:[kind] name`, the
+# preview is `bat` scrolled to the symbol's line, Enter opens $EDITOR at the line.
+# NOTE: needs Homebrew's universal-ctags on PATH ahead of macOS's /usr/bin/ctags.
+[metadata]
+name = "symbols"
+requirements = ["ctags", "jq", "bat"]
+description = "Fuzzy-search code symbols (classes/functions/vars) in the current project via universal-ctags."
+
+[source]
+command = "ctags -R --output-format=json --fields=+n --languages=-JSON --exclude=.git --exclude=node_modules --exclude=target --exclude=.venv --exclude=dist -f - . 2>/dev/null | jq -r 'select(._type==\"tag\") | \"\\(.path):\\(.line):[\\(.kind)] \\(.name)\"'"
+output = "{split:\\::..2}"
+
+[preview]
+command = "bat -n --color=always '{split:\\::0}'"
+env = { BAT_THEME = "ansi" }
+offset = '{split:\::1}'
+
+[ui]
+preview_panel = { header = '{split:\::..2}' }
+
+[keybindings]
+enter = "actions:edit"
+
+[actions.edit]
+description = "Open symbol in editor at line"
+command = "${EDITOR:-vim} '+{split:\\::1}' '{split:\\::0}'"
+shell = "bash"
+mode = "execute"

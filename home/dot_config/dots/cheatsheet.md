@@ -63,6 +63,8 @@ shell, `:colorscheme <name>` for a running nvim). The choice lives in
 |---------|--------------|
 | `ff` | fuzzy-find a file (bat preview) → open in Neovim |
 | `fcd` | fuzzy-find a directory → cd into it |
+| `fsym` | fuzzy-search code symbols (classes/funcs/vars, ctags) → open at line |
+| `proj` | fuzzy-pick a git repo under ~/repos or ~/projects → cd in (Ctrl-S: its symbols) |
 | `mkcd <dir>` | make a directory (and parents) then cd into it |
 | `extract <file>` | extract any archive by extension (tar/gz/zip/7z/rar…) |
 | `ports` | listening TCP ports + the owning process |
@@ -111,7 +113,8 @@ How it wires up (no manual editing needed):
 | `Ctrl-R` | fuzzy history search (television) — filters as you type, Enter to run | both |
 | `Ctrl-T` | smart autocomplete for the current command (television) | both |
 | `ff` / `fcd` | fuzzy-find a file to edit / dir to cd (television) | both |
-| `tv` | open the fuzzy finder; `tv text` greps, `tv tldr` browses cheatsheets | both |
+| `fsym` / `proj` | fuzzy-search code symbols / pick a repo under ~/repos (television) | both |
+| `tv` | open the fuzzy finder; `tv text` greps, `tv symbols` jumps to code symbols, `tv tldr` browses cheatsheets | both |
 | `Esc` then `k`/`j`/`/` | vi-mode: normal mode, search history | both |
 | `→` / `Ctrl-F` | accept autosuggestion | zsh |
 
@@ -186,6 +189,7 @@ The unfocused pane dims automatically. tmux still works inside WezTerm
 | containers | `podman` | `docker run ...` (aliased) |
 | secrets | `chezmoi` + `age` | `dots secret-add <f>` |
 | example-first help | `tldr` (tealdeer) | `tldr ffmpeg` |
+| jump to a code symbol | `tv symbols` / `fsym` | classes/funcs/vars via ctags |
 | browse cheatsheets fuzzily | `tv tldr` | pick a page, preview rendered |
 | task runner | `just` | `just` lists recipes; `just build` |
 | file manager | `yazi` | `y` (cd's to where you quit) |
