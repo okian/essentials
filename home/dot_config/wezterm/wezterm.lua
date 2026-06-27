@@ -55,7 +55,7 @@ config.line_height = 1.05
 
 config.window_decorations = "RESIZE"
 -- Roomier padding so text breathes away from the window edge.
-config.window_padding = { left = 16, right = 16, top = 14, bottom = 12 }
+config.window_padding = { left = 20, right = 20, top = 18, bottom = 16 }
 -- Semi-transparent, glassy look. Pair the opacity with a heavy macOS blur so the
 -- background reads as frosted glass rather than just see-through.
 config.window_background_opacity = 0.85
@@ -138,7 +138,7 @@ wezterm.on("update-right-status", function(window, _pane)
   end
 
   table.insert(cells, { Foreground = { Color = p.accent } })
-  table.insert(cells, { Text = " " .. wezterm.strftime("%H:%M") .. " " })
+  table.insert(cells, { Text = " " .. wezterm.strftime("%H:%M") .. "   " })
 
   window:set_right_status(wezterm.format(cells))
 end)
