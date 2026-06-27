@@ -9,6 +9,7 @@ assets
 {{ if ne .chezmoi.os "darwin" }}
 # macOS-only configs
 Library/
+.hammerspoon
 {{ end }}
 
 {{- /* Secrets gate: if the age key is absent, skip every encrypted secret. */ -}}

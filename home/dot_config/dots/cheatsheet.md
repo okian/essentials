@@ -157,9 +157,25 @@ leader/workspace/battery/clock.
 | `leader` `w` | workspace switcher |
 | `⌘/Ctrl +`/`-`/`0` | font size up / down / reset |
 | `⌘/Ctrl Enter` | toggle fullscreen |
+| `⌘`-drag | move the window (no title bar) |
 
 The unfocused pane dims automatically. `Ctrl-h/j/k/l` crosses the Neovim↔WezTerm
 boundary transparently (smart-splits.nvim).
+
+## macOS — Hammerspoon (keyboard-layout fixer)
+
+Typed a whole phrase in the wrong layout (meant فارسی, got `sghl`; or meant
+English, got Persian glyphs)? Select it and hit the hotkey — it detects the
+script and re-maps each key positionally to the other layout, pasting the
+fix over your selection (your clipboard is preserved).
+
+| Key | Action |
+|-----|--------|
+| `⌘⌥K` | fix the selected text's keyboard layout (EN ⇄ FA) |
+
+Config lives in `~/.hammerspoon/init.lua` (managed). **First run only:** enable
+Hammerspoon under System Settings → Privacy & Security → Accessibility, and turn
+on "Launch Hammerspoon at login". macOS-only.
 
 ## CLI tools at a glance
 

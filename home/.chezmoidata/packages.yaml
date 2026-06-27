@@ -126,6 +126,9 @@ packages:
   #     (see run_onchange_after_60-linux-apps).
   brew_casks:
     - wezterm
+    - hammerspoon   # Lua automation; powers the keyboard-layout fixer
+                    #   (~/.hammerspoon/init.lua: ⌘⌥K remaps a mistyped
+                    #   selection between US-QWERTY and Persian-Standard)
     # (JetBrainsMono Nerd Font is installed by run_onchange_before_10-packages
     #  via direct download on BOTH OSes — not a cask. Casks "adopt" pre-existing
     #  font files and abort when checksums differ; the direct unzip overwrites.)
