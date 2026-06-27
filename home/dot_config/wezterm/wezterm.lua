@@ -55,7 +55,7 @@ config.line_height = 1.05
 
 config.window_decorations = "RESIZE"
 -- Roomier padding so text breathes away from the window edge.
-config.window_padding = { left = 20, right = 20, top = 18, bottom = 16 }
+config.window_padding = { left = 24, right = 24, top = 22, bottom = 20 }
 -- Semi-transparent, glassy look. Pair the opacity with a heavy macOS blur so the
 -- background reads as frosted glass rather than just see-through.
 config.window_background_opacity = 0.85
@@ -105,10 +105,11 @@ wezterm.on("format-tab-title", function(tab, _tabs, _panes, _conf, _hover, max_w
     local path = uri.file_path or tostring(uri)
     cwd = (path:gsub("/$", "")):match("([^/]+)$") or ""
   end
-  local title = string.format(" %d %s %s ", tab.tab_index + 1, process_icon(proc), proc)
+  local title = string.format("  %d %s %s ", tab.tab_index + 1, process_icon(proc), proc)
   if #cwd > 0 then
     title = title .. cwd .. " "
   end
+  title = title .. " "
   if #title > max_width then
     title = wezterm.truncate_right(title, max_width - 1) .. "…"
   end
@@ -117,6 +118,9 @@ end)
 
 -- ── Right status line: leader · workspace · battery · clock ──────────────────
 wezterm.on("update-right-status", function(window, _pane)
+  -- Small left spacer so the first tab doesn't sit flush against the edge.
+  window:set_left_status(wezterm.format({ { Text = "  " } }))
+
   local cells = {}
 
   if window:leader_is_active() then
@@ -208,6 +212,22 @@ for i = 1, 9 do
     key = tostring(i), mods = "LEADER", action = act.ActivateTab(i - 1),
   })
 end
+
+-- ── Mouse ─────────────────────────────────────────────────────────────────
+-- No title bar (window_decorations = "RESIZE"), so allow dragging the window
+-- from anywhere with CTRL held. Plain click/drag still selects text.
+config.mouse_bindings = {
+  {
+    event = { Drag = { streak = 1, button = "Left" } },
+    mods = "CTRL",
+    action = act.StartWindowDrag,
+  },
+  {
+    event = { Down = { streak = 1, button = "Left" } },
+    mods = "CTRL",
+    action = act.StartWindowDrag,
+  },
+}
 
 -- Match more URL shapes for link detection.
 config.hyperlink_rules = wezterm.default_hyperlink_rules()
