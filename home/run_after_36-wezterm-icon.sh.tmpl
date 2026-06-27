@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# Replace WezTerm's stock icon with a generated, on-brand one: a rounded macOS
+# squircle in the active dots-theme palette, with the ❯ prompt glyph + a cursor
+# block. macOS only.
+#
+# WezTerm is a Homebrew cask, so `brew upgrade` restores the stock icon. This
+# runs on every apply (and on `dots update`, which applies right after upgrading),
+# re-asserting the custom icon whenever the bundle's differs. It's cheap when
+# nothing is needed: the .icns is generated once into ~/.cache and only rebuilt
+# when the palette or design version changes, and the bundle is only touched when
+# its current icon doesn't match.
+set -euo pipefail
+
+{{ if .isMac -}}
+command -v magick >/dev/null 2>&1 || { echo "imagemagick not found; skipping WezTerm icon"; exit 0; }
+
+font="$HOME/Library/Fonts/JetBrainsMonoNerdFont-Bold.ttf"
+[ -f "$font" ] || { echo "JetBrainsMono Nerd Font not found; skipping WezTerm icon"; exit 0; }
+
+# Locate WezTerm.app (the cask installs into /Applications).
+app=""
+for cand in /Applications/WezTerm.app "$HOME/Applications/WezTerm.app"; do
+  [ -d "$cand" ] && { app="$cand"; break; }
+done
+[ -n "$app" ] || { echo "WezTerm.app not found; skipping icon"; exit 0; }
+target="$app/Contents/Resources/terminal.icns"
+
+# Colours follow the active dots-theme palette when present, else Catppuccin.
+top="#1e1e2e"; bot="#11111b"; chev="#a6e3a1"; cur="#cba6f7"
+pal="$HOME/.config/dots/palette.json"
+if command -v jq >/dev/null 2>&1 && [ -f "$pal" ]; then
+  top="$(jq -r '.palette.bg      // "#1e1e2e"' "$pal")"
+  bot="$(jq -r '.palette.bg_dark // "#11111b"' "$pal")"
+  chev="$(jq -r '.palette.green  // "#a6e3a1"' "$pal")"
+  cur="$(jq -r '.palette.accent  // "#cba6f7"' "$pal")"
+fi
+
+cache="$HOME/.cache/dots/wezterm-icon"
+mkdir -p "$cache"
+icns="$cache/terminal.icns"
+sig="v1|$top|$bot|$chev|$cur"   # bump v1 to force a rebuild on design changes
+
+# (Re)generate the .icns only when missing or when the palette/design changed.
+if [ ! -f "$icns" ] || [ "$(cat "$cache/sig" 2>/dev/null || true)" != "$sig" ]; then
+  echo "==> generating WezTerm icon"
+  work="$(mktemp -d)"
+  # Rounded-square mask on the Big Sur 1024 grid (824 content, r=185).
+  magick -size 1024x1024 xc:black -fill white \
+    -draw 'roundrectangle 100,100 924,924 185,185' "$work/mask.png"
+  # Subtle vertical gradient (bg -> bg_dark) for depth, clipped to the square.
+  magick -size 1024x1024 "gradient:$top-$bot" "$work/grad.png"
+  magick "$work/grad.png" "$work/mask.png" -alpha off \
+    -compose CopyOpacity -composite "$work/bg.png"
+  # ❯ prompt glyph (left of centre) + cursor block (absolute coords; -draw
+  # ignores -gravity), heights matched.
+  magick "$work/bg.png" -font "$font" -pointsize 430 \
+    -fill "$chev" -gravity Center -annotate -120+0 '❯' \
+    -gravity NorthWest -fill "$cur" -draw 'roundrectangle 590,385 690,655 22,22' \
+    "$work/1024.png"
+  # Build the .iconset (each logical size + its @2x retina variant), then .icns.
+  iconset="$work/icon.iconset"; mkdir -p "$iconset"
+  while read -r size name; do
+    [ -n "$size" ] || continue
+    sips -z "$size" "$size" "$work/1024.png" --out "$iconset/icon_$name.png" >/dev/null
+  done <<'SIZES'
+16 16x16
+32 16x16@2x
+32 32x32
+64 32x32@2x
+128 128x128
+256 128x128@2x
+256 256x256
+512 256x256@2x
+512 512x512
+SIZES
+  cp "$work/1024.png" "$iconset/icon_512x512@2x.png"
+  iconutil -c icns "$iconset" -o "$icns"
+  printf '%s' "$sig" > "$cache/sig"
+  rm -rf "$work"
+fi
+
+# Apply only when the bundle's icon differs (fresh install / after brew upgrade).
+if ! cmp -s "$icns" "$target"; then
+  echo "==> applying WezTerm icon"
+  [ -f "$target.orig" ] || cp "$target" "$target.orig" 2>/dev/null || true
+  cp "$icns" "$target"
+  touch "$app"
+  rm -rf "$HOME/Library/Caches/com.apple.iconservices.store" 2>/dev/null || true
+  killall Dock 2>/dev/null || true
+fi
+{{ else -}}
+echo "WezTerm icon customization is macOS-only; nothing to do."
+{{ end -}}
