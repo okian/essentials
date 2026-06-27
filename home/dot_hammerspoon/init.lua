@@ -88,7 +88,7 @@ local function fixSelection()
 
   hs.pasteboard.setContents(fixed)
   hs.eventtap.keyStroke({ "cmd" }, "v", 0)  -- replace the selection
-  hs.alert.show(label)
+  -- hs.alert.show(label)
 
   -- Restore the user's clipboard once the paste has consumed our text.
   hs.timer.doAfter(0.25, function()
