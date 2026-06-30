@@ -47,7 +47,7 @@ On macOS, `dots autoupdate` runs `dots upgrade` every 4h in the background — `
 `chezmoi re-add` pulls a machine-local change back into the repo; then push it.
 Add a secret with `dots secret-add <path>` — it's encrypted before it touches git.
 `man <cmd>` is rendered with syntax highlighting via bat. `cat` is bat; `ls` is eza.
-`docker` is aliased to podman — `docker run ...` just works without Docker Desktop.
+`colima start` boots the container runtime; then `docker run ...` works without Docker Desktop.
 Per-language tools (goimports, gopls, dlv, clippy, pytest, mypy, …) ship preinstalled.
 Add a dev tool: edit `go_tools`/`cargo_tools`/`python_tools`/`node_globals` in packages.yaml → `chezmoi apply`.
 `tldr <cmd>` shows example-first usage (tealdeer) — faster than scrolling a full man page.

@@ -48,8 +48,8 @@ alias la='ls -a'
 alias lt='eza --tree --level=2 --icons 2>/dev/null || ls -la'
 alias g='git' lg='lazygit' v='nvim' vim='nvim' cat='bat'
 alias top='btop'
-# Container muscle-memory: docker -> podman
-alias docker='podman' docker-compose='podman-compose' dc='podman-compose'
+# Containers: docker CLI talks to colima natively; short alias for compose.
+alias dc='docker compose'
 
 # Integrations
 command -v starship >/dev/null && eval "$(starship init zsh)"

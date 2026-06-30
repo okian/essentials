@@ -72,10 +72,8 @@ alias v = nvim
 alias vim = nvim
 alias cat = bat
 alias top = btop
-# Container muscle-memory: docker -> podman.
-alias docker = podman
-alias dc = podman-compose
-alias docker-compose = podman-compose
+# Containers: docker CLI talks to colima natively; short alias for compose.
+alias dc = docker compose
 if (which eza | is-not-empty) {
   alias ls = eza --icons --group-directories-first
   alias lt = eza --tree --level=2 --icons

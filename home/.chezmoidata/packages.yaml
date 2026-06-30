@@ -75,9 +75,10 @@ packages:
     - python
     - uv
     - node          # needed by many LSPs / Claude Code npm fallback
-    # containers
-    - podman
-    - podman-compose
+    # containers (colima provides the Docker-compatible runtime; docker CLI talks to it)
+    - colima
+    - docker
+    - docker-compose
     # cloud
     - awscli
     # misc utilities
@@ -138,6 +139,9 @@ packages:
     - claude
     - ollama-app    # renamed from `ollama` (the cask) in Homebrew
     # utilities / comms
+    - qlmarkdown     # Quick Look preview for Markdown (Space-bar in Finder).
+                     #   Needs a one-time launch to register the extension —
+                     #   handled by run_once_after_42-qlmarkdown.
     - google-chrome
     - tailscale-app   # renamed from `tailscale` (the cask) in Homebrew
     - discord

@@ -57,7 +57,7 @@ shell, `:colorscheme <name>` for a running nvim). The choice lives in
 | `g` | `git` | |
 | `lg` | `lazygit` | visual git TUI |
 | `v`, `vim` | `nvim` | |
-| `docker` | `podman` | + `dc`/`docker-compose` → `podman-compose` |
+| `dc` | `docker compose` | docker CLI talks to the colima runtime natively |
 
 ## Functions / commands
 
@@ -194,7 +194,7 @@ on "Launch Hammerspoon at login". macOS-only.
 | diffs | `delta` | (auto, via git; `n`/`N` navigates hunks) |
 | structural diff | `difftastic` | `git dft` |
 | auto-fixup commits | `git-absorb` | `git absorb` |
-| containers | `podman` | `docker run ...` (aliased) |
+| containers | `colima` + `docker` | `colima start`, then `docker run ...` |
 | secrets | `chezmoi` + `age` | `dots secret-add <f>` |
 | example-first help | `tldr` (tealdeer) | `tldr ffmpeg` |
 | jump to a code symbol | `tv symbols` / `fsym` | classes/funcs/vars via ctags |

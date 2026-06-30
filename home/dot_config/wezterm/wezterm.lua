@@ -89,7 +89,7 @@ local function process_icon(name)
     nu = "", bash = "", zsh = "", fish = "",
     nvim = "", vim = "",
     git = "", lazygit = "", k9s = "󱃾", btop = "",
-    node = "", python = "", go = "", cargo = "", docker = "", podman = "",
+    node = "", python = "", go = "", cargo = "", docker = "", colima = "",
     yazi = "", ssh = "",
   }
   return icons[name] or ""

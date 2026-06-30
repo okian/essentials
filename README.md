@@ -25,7 +25,7 @@ your git name/email, then applies all dotfiles and runs the provisioning scripts
 | Languages   | rust (rustup), swift (swiftly), go, python (+ uv), node |
 | Dev tools   | per-language LSPs/linters/formatters: clippy·rustfmt·rust-analyzer, goimports·gopls·dlv·gofumpt, pytest·mypy, prettier·eslint·tsc (see `go_tools`/`cargo_tools`/`python_tools`/`node_globals` in `packages.yaml`) |
 | Terminal    | **wezterm** (also the multiplexer — splits/panes/tabs, no tmux) |
-| Containers  | **podman** (rootless; `podman machine` on macOS) — no Docker Desktop; `docker`→`podman` shim; podman-compose, **dive**, **trivy** (CVE/secret scan) |
+| Containers  | **colima** (Docker-compatible Lima VM) — no Docker Desktop; native `docker` CLI + `docker-compose`, **dive**, **trivy** (CVE/secret scan) |
 | Fuzzy/nav   | **television** (`tv`, fuzzy finder w/ channels), zoxide, ripgrep, fd, bat, eza, **yazi** (file manager w/ previews) |
 | Modern CLI  | tldr (tealdeer), just, btop, dust/duf/procs, sd, hyperfine, xh, jless |
 | Git         | git, git-delta, lazygit, gh, **difftastic** (`git dft`), **git-absorb**, global ignore + commit template |
@@ -46,7 +46,7 @@ A few deliberate choices, so the "why" survives:
 - **Per-language version managers** (rustup / swiftly / uv) instead of one umbrella tool —
   each language gets its first-class, always-current toolchain. (`mise` is the unified
   alternative; chosen against on purpose.)
-- **podman over Docker Desktop** — rootless, daemonless, no licensing; `docker` is shimmed to it.
+- **colima over Docker Desktop** — open-source Lima VM, no licensing; the stock `docker` CLI talks to it.
 - **One theme everywhere** — `dots theme` retints WezTerm, Neovim, Doom, nushell, starship,
   bat and television together from a single palette (default Catppuccin Mocha).
 - **`packages.yaml` is the single source of truth** — add a tool there, never in an ad-hoc script.

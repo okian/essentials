@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Register the QLMarkdown Quick Look extension (macOS only).
+# The cask drops QLMarkdown.app in /Applications, but the Quick Look extension
+# only registers once the app has been launched once. Run-once so we don't
+# relaunch the app / bounce Finder on every apply.
+set -euo pipefail
+
+{{ if .isMac -}}
+APP="/Applications/QLMarkdown.app"
+[ -d "$APP" ] || { echo "QLMarkdown.app not found; skipping"; exit 0; }
+
+# Gatekeeper quarantine can block the extension from loading; strip it (no-op if absent).
+xattr -r -d com.apple.quarantine "$APP" 2>/dev/null || true
+
+echo "==> Launching QLMarkdown to register its Quick Look extension"
+open -a QLMarkdown
+
+# Force Quick Look to pick up the newly-registered generator.
+qlmanage -r >/dev/null 2>&1 || true
+killall Finder 2>/dev/null || true
+echo "==> QLMarkdown done"
+{{ else -}}
+echo "QLMarkdown is macOS-only; skipping"
+{{ end -}}

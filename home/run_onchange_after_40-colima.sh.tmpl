@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Container runtime: Colima (Docker-compatible, no Docker Desktop).
+set -euo pipefail
+
+{{ template "brew-shellenv.sh" . }}
+
+command -v colima >/dev/null 2>&1 || { echo "colima not found; skipping"; exit 0; }
+
+# Colima boots a small Lima VM that exposes a Docker-compatible socket, so the
+# plain `docker` CLI just works against it (same on macOS and Linux). Start the
+# default profile if it isn't up; `colima status` is the cheap liveness check.
+if colima status >/dev/null 2>&1; then
+  echo "==> colima already running"
+else
+  echo "==> Starting colima"
+  colima start
+fi
+echo "==> colima done"
